@@ -4,19 +4,34 @@
 -- ============================================================
 -- Run this file FIRST, then run seed_data.sql.
 -- In DBeaver: paste contents → Ctrl+Alt+Enter (run all)
+--
+-- PostgreSQL note:
+--   This script creates and uses a dedicated 'workshop' schema
+--   to avoid the "permission denied for schema public" error
+--   that appears in PostgreSQL 15+ for non-superuser accounts.
+--   All tables live in the 'workshop' schema.
+--
+-- SQLite note:
+--   SQLite ignores the CREATE SCHEMA and SET search_path lines
+--   harmlessly — everything still works.
 -- ============================================================
 
---Grant access to yourself/User to do the operations on the public schmea.
---It will be the same user that you have created the database with. 
-GRANT USAGE ON SCHEMA public TO YOURSELF;
-GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO YOURSELF;
+-- ── PostgreSQL: create a dedicated schema ────────────────────
+-- (SQLite silently ignores these two statements)
+CREATE SCHEMA IF NOT EXISTS workshop;
+SET search_path TO workshop;
+
+-- Alternative fix (requires a superuser to run once):
+--   GRANT CREATE ON SCHEMA public TO <your_username>;
+-- The CREATE SCHEMA approach above is preferred because it works
+-- without superuser access.
 
 -- Drop in reverse dependency order (safe to re-run)
-DROP TABLE IF EXISTS payments;
-DROP TABLE IF EXISTS order_items;
-DROP TABLE IF EXISTS orders;
-DROP TABLE IF EXISTS products;
-DROP TABLE IF EXISTS customers;
+DROP TABLE IF EXISTS workshop.payments;
+DROP TABLE IF EXISTS workshop.order_items;
+DROP TABLE IF EXISTS workshop.orders;
+DROP TABLE IF EXISTS workshop.products;
+DROP TABLE IF EXISTS workshop.customers;
 
 -- ── customers ────────────────────────────────────────────────
 -- NOTE: email and city are intentionally nullable — real-world
@@ -39,8 +54,8 @@ CREATE TABLE products (
     id             INTEGER PRIMARY KEY,
     name           TEXT    NOT NULL,
     category       TEXT,            -- Electronics | Clothing | Books | Home & Garden
-    price          REAL    NOT NULL,
-    cost           REAL,
+    price          NUMERIC(10,2) NOT NULL,
+    cost           NUMERIC(10,2),
     stock_quantity INTEGER  DEFAULT 0,
     is_active      INTEGER  DEFAULT 1  -- 1 = active, 0 = discontinued
 );
@@ -53,7 +68,7 @@ CREATE TABLE orders (
     created_at   TEXT,   -- YYYY-MM-DD HH:MM:SS
     updated_at   TEXT,   -- NULL when order hasn't been updated yet
     region       TEXT,   -- North | South | East | West | Online
-    discount_pct REAL    DEFAULT 0,
+    discount_pct NUMERIC(5,2) DEFAULT 0,
     FOREIGN KEY (customer_id) REFERENCES customers(id)
 );
 
@@ -64,7 +79,7 @@ CREATE TABLE order_items (
     order_id   INTEGER NOT NULL,
     product_id INTEGER NOT NULL,
     quantity   INTEGER NOT NULL DEFAULT 1,
-    unit_price REAL    NOT NULL,
+    unit_price NUMERIC(10,2) NOT NULL,
     FOREIGN KEY (order_id)   REFERENCES orders(id),
     FOREIGN KEY (product_id) REFERENCES products(id)
 );
@@ -75,7 +90,7 @@ CREATE TABLE order_items (
 CREATE TABLE payments (
     id             INTEGER PRIMARY KEY,
     order_id       INTEGER UNIQUE,
-    amount         REAL,
+    amount         NUMERIC(10,2),
     payment_method TEXT,  -- credit_card | paypal | bank_transfer | cash
     paid_at        TEXT,  -- YYYY-MM-DD HH:MM:SS
     status         TEXT,  -- completed | failed | refunded | pending

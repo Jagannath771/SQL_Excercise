@@ -3,6 +3,10 @@
 -- ============================================================
 -- Run AFTER schema.sql.
 -- Intentional data issues are marked with -- [DIRTY] comments
+--
+-- PostgreSQL: sets search_path so inserts go to the workshop schema.
+-- SQLite:     this line is silently ignored.
+SET search_path TO workshop;
 -- so you know what to look for in the cleaning exercises.
 -- ============================================================
 

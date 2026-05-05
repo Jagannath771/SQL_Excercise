@@ -6,6 +6,11 @@
 -- In DBeaver: paste contents → Ctrl+Alt+Enter (run all)
 -- ============================================================
 
+--Grant access to yourself/User to do the operations on the public schmea.
+--It will be the same user that you have created the database with. 
+GRANT USAGE ON SCHEMA public TO YOURSELF;
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO YOURSELF;
+
 -- Drop in reverse dependency order (safe to re-run)
 DROP TABLE IF EXISTS payments;
 DROP TABLE IF EXISTS order_items;

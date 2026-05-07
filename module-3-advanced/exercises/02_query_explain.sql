@@ -25,6 +25,9 @@
 -- ─────────────────────────────────────────────────────────────
 -- 2.1  Your first EXPLAIN
 -- ─────────────────────────────────────────────────────────────
+
+--NOTE
+-- If using Postgres SQL its just EXPLAIN instead of EXPLAIN QUERY PLAN
 -- See how SQLite plans a simple filter:
 EXPLAIN QUERY PLAN
 SELECT * FROM customers WHERE tier = 'gold';
